@@ -9,7 +9,8 @@ import {
   TimePickerAndroid,
   DatePickerIOS,
   Platform,
-  Animated
+  Animated,
+  PanResponder
 } from 'react-native';
 import Style from './style';
 import Moment from 'moment';
@@ -50,6 +51,39 @@ class DatePicker extends Component {
       'Warning: Failed propType'
       // Other warnings you don't want like 'jsSchedulingOverhead',
     ];
+
+    this._panResponder = PanResponder.create({
+      onStartShouldSetPanResponder: this._handleStartShouldSetPanResponder,
+      onMoveShouldSetPanResponder: this._handleMoveShouldSetPanResponder,
+      onPanResponderGrant: this._handlePanResponderGrant.bind(this),
+      onPanResponderMove: this._handlePanResponderMove.bind(this),
+      onPanResponderRelease: this._handlePanResponderEnd.bind(this),
+      onPanResponderTerminate: this._handlePanResponderEnd.bind(this),
+    });
+  }
+
+  _handleStartShouldSetPanResponder(e: Object, gestureState: Object): boolean {
+    // Should we become active when the user presses down on the circle?
+    return true;
+  }
+
+  _handleMoveShouldSetPanResponder(e: Object, gestureState: Object): boolean {
+    // Should we become active when the user moves a touch over the circle?
+    return Math.abs(gestureState.dx) > 5;
+  }
+
+  _handlePanResponderGrant(e: Object, gestureState: Object) {
+    this.setState({
+      dateChagned: false
+    });
+  }
+
+  _handlePanResponderMove(e: Object, gestureState: Object) {
+
+  }
+
+  _handlePanResponderEnd(e: Object, gestureState: Object) {
+
   }
 
   setModalVisible(visible) {
@@ -255,6 +289,7 @@ class DatePicker extends Component {
                 style={{flex: 1}}
               >
                 <Animated.View
+                  {...this._panResponder.panHandlers}
                   style={[Style.datePickerCon, {height: this.state.animatedHeight}, customStyles.datePickerCon]}
                 >
                   <DatePickerIOS
@@ -262,7 +297,10 @@ class DatePicker extends Component {
                     mode={this.props.mode}
                     minimumDate={this.props.minDate && this.getDate(this.props.minDate)}
                     maximumDate={this.props.maxDate && this.getDate(this.props.maxDate)}
-                    onDateChange={(date) => this.setState({date: date})}
+                    onDateChange={(date) => {
+
+                      this.setState({date: date, dateChagned: true})
+                    }}
                     style={[Style.datePicker, customStyles.datePicker]}
                   />
                   <TouchableHighlight
@@ -276,13 +314,15 @@ class DatePicker extends Component {
                       {this.props.cancelBtnText}
                     </Text>
                   </TouchableHighlight>
-                  <TouchableHighlight
-                    underlayColor={'transparent'}
-                    onPress={this.onPressConfirm}
-                    style={[Style.btnText, Style.btnConfirm, customStyles.btnConfirm]}
-                  >
-                    <Text style={[Style.btnTextText, customStyles.btnTextConfirm]}>{this.props.confirmBtnText}</Text>
-                  </TouchableHighlight>
+                  {!this.state.dateChagned ||
+                    <TouchableHighlight
+                      underlayColor={'transparent'}
+                      onPress={this.onPressConfirm}
+                      style={[Style.btnText, Style.btnConfirm, customStyles.btnConfirm]}
+                    >
+                      <Text style={[Style.btnTextText, customStyles.btnTextConfirm]}>{this.props.confirmBtnText}</Text>
+                    </TouchableHighlight>
+                  }
                 </Animated.View>
               </TouchableHighlight>
             </TouchableHighlight>
