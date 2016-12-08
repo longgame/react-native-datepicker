@@ -10,10 +10,12 @@ import {
   DatePickerIOS,
   Platform,
   Animated,
-  PanResponder
+  PanResponder,
+  Dimensions
 } from 'react-native';
 import Style from './style';
 import Moment from 'moment';
+const timer = require('react-native-timer');
 
 const FORMATS = {
   'date': 'YYYY-MM-DD',
@@ -30,6 +32,8 @@ class DatePicker extends Component {
     this.state = {
       date: this.getDate(),
       modalVisible: false,
+      invisibleBlocker: false,
+      dateChanged: false,
       disabled: this.props.disabled,
       animatedHeight: new Animated.Value(0)
     };
@@ -43,6 +47,10 @@ class DatePicker extends Component {
     this.onDatetimePicked = this.onDatetimePicked.bind(this);
     this.onDatetimeTimePicked = this.onDatetimeTimePicked.bind(this);
     this.setModalVisible = this.setModalVisible.bind(this);
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    console.log('invisibleBlocker', this.state.invisibleBlocker)
   }
 
   componentWillMount() {
@@ -74,7 +82,7 @@ class DatePicker extends Component {
 
   _handlePanResponderGrant(e: Object, gestureState: Object) {
     this.setState({
-      dateChagned: false
+      dateChanged: true
     });
   }
 
@@ -282,14 +290,12 @@ class DatePicker extends Component {
               style={Style.datePickerMask}
               activeOpacity={1}
               underlayColor={'#00000077'}
-              onPress={this.onPressCancel}
             >
               <TouchableHighlight
                 underlayColor={'#fff'}
                 style={{flex: 1}}
               >
                 <Animated.View
-                  {...this._panResponder.panHandlers}
                   style={[Style.datePickerCon, {height: this.state.animatedHeight}, customStyles.datePickerCon]}
                 >
                   <DatePickerIOS
@@ -298,11 +304,22 @@ class DatePicker extends Component {
                     minimumDate={this.props.minDate && this.getDate(this.props.minDate)}
                     maximumDate={this.props.maxDate && this.getDate(this.props.maxDate)}
                     onDateChange={(date) => {
-
-                      this.setState({date: date, dateChagned: true})
+                      this.setState({date: date, dateChanged: true, invisibleBlocker: true})
+                      timer.setTimeout(
+                        this, 'disableInvisibleBLocker', () => {
+                          this.setState({
+                            invisibleBlocker: false,
+                          });
+                        }, 250
+                      )
                     }}
                     style={[Style.datePicker, customStyles.datePicker]}
                   />
+
+                  {!this.state.invisibleBlocker ||
+                    <View style={{position: 'absolute', top: 0, left:0, height: 300, width: Dimensions.get('window').width}} />
+                  }
+
                   <TouchableHighlight
                     underlayColor={'transparent'}
                     onPress={this.onPressCancel}
@@ -314,7 +331,7 @@ class DatePicker extends Component {
                       {this.props.cancelBtnText}
                     </Text>
                   </TouchableHighlight>
-                  {!this.state.dateChagned ||
+                  { !this.state.dateChanged ||
                     <TouchableHighlight
                       underlayColor={'transparent'}
                       onPress={this.onPressConfirm}
