@@ -49,10 +49,6 @@ class DatePicker extends Component {
     this.setModalVisible = this.setModalVisible.bind(this);
   }
 
-  componentDidUpdate(prevProps, prevState) {
-    console.log('invisibleBlocker', this.state.invisibleBlocker)
-  }
-
   componentWillMount() {
     // ignore the warning of Failed propType for date of DatePickerIOS, will remove after being fixed by official
     console.ignoredYellowBox = [
@@ -220,7 +216,8 @@ class DatePicker extends Component {
 
     // reset state
     this.setState({
-      date: this.getDate()
+      date: this.getDate(),
+      dateChanged: false,
     });
 
     if (Platform.OS === 'ios') {
@@ -300,6 +297,7 @@ class DatePicker extends Component {
                 >
                   <DatePickerIOS
                     date={this.state.date}
+                    initialDate={this.props.initialDate}
                     mode={this.props.mode}
                     minimumDate={this.props.minDate && this.getDate(this.props.minDate)}
                     maximumDate={this.props.maxDate && this.getDate(this.props.maxDate)}
@@ -310,14 +308,14 @@ class DatePicker extends Component {
                           this.setState({
                             invisibleBlocker: false,
                           });
-                        }, 250
+                        }, 400
                       )
                     }}
                     style={[Style.datePicker, customStyles.datePicker]}
                   />
 
                   {!this.state.invisibleBlocker ||
-                    <View style={{position: 'absolute', top: 0, left:0, height: 300, width: Dimensions.get('window').width}} />
+                  <View style={{position: 'absolute', top: 0, left:0, height: 300, width: Dimensions.get('window').width}} />
                   }
 
                   <TouchableHighlight
@@ -332,13 +330,13 @@ class DatePicker extends Component {
                     </Text>
                   </TouchableHighlight>
                   { !this.state.dateChanged ||
-                    <TouchableHighlight
-                      underlayColor={'transparent'}
-                      onPress={this.onPressConfirm}
-                      style={[Style.btnText, Style.btnConfirm, customStyles.btnConfirm]}
-                    >
-                      <Text style={[Style.btnTextText, customStyles.btnTextConfirm]}>{this.props.confirmBtnText}</Text>
-                    </TouchableHighlight>
+                  <TouchableHighlight
+                    underlayColor={'transparent'}
+                    onPress={this.onPressConfirm}
+                    style={[Style.btnText, Style.btnConfirm, customStyles.btnConfirm]}
+                  >
+                    <Text style={[Style.btnTextText, customStyles.btnTextConfirm]}>{this.props.confirmBtnText}</Text>
+                  </TouchableHighlight>
                   }
                 </Animated.View>
               </TouchableHighlight>
@@ -366,7 +364,8 @@ DatePicker.defaultProps = {
   // whether or not show the icon
   showIcon: true,
   disabled: false,
-  placeholder: ''
+  placeholder: '',
+  modalOnResponderTerminationRequest: e => true
 };
 
 DatePicker.propTypes = {
@@ -383,7 +382,8 @@ DatePicker.propTypes = {
   showIcon: React.PropTypes.bool,
   disabled: React.PropTypes.bool,
   onDateChange: React.PropTypes.func,
-  placeholder: React.PropTypes.string
+  placeholder: React.PropTypes.string,
+  modalOnResponderTerminationRequest: React.PropTypes.func
 };
 
 export default DatePicker;
