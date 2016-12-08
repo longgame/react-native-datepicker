@@ -3,7 +3,8 @@ import {
   AppRegistry,
   StyleSheet,
   Text,
-  View
+  View,
+  PanResponder
 } from 'react-native';
 import DatePicker from './index.js';
 
@@ -20,9 +21,22 @@ class datepicker extends Component {
     };
   }
 
+  componentWillMount() {
+    this._panResponder = PanResponder.create({
+      onStartShouldSetPanResponder: (e) => {console.log('onStartShouldSetPanResponder'); return true;},
+      onMoveShouldSetPanResponder: (e) => {console.log('onMoveShouldSetPanResponder'); return true;},
+      onPanResponderGrant: (e) => console.log('onPanResponderGrant'),
+      onPanResponderMove: (e) => console.log('onPanResponderMove'),
+      onPanResponderRelease: (e) => console.log('onPanResponderRelease'),
+      onPanResponderTerminate: (e) => console.log('onPanResponderTerminate')
+    });
+  }
+
   render() {
     return (
-      <View style={styles.container}>
+      <View style={styles.container}
+            {...this._panResponder.panHandlers}
+      >
         <Text style={styles.welcome}>
           Welcome to react-native-datepicker example!
         </Text>
@@ -47,6 +61,7 @@ class datepicker extends Component {
           format="HH:mm"
           confirmBtnText="Confirm"
           cancelBtnText="Cancel"
+          minuteInterval={10}
           onDateChange={(time) => {this.setState({time: time});}}
         />
         <Text style={styles.instructions}>time: {this.state.time}</Text>
@@ -79,6 +94,7 @@ class datepicker extends Component {
               marginLeft: 36
             }
           }}
+          minuteInterval={10}
           onDateChange={(datetime) => {this.setState({datetime1: datetime});}}
         />
         <Text style={styles.instructions}>datetime: {this.state.datetime1}</Text>
