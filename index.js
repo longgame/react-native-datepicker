@@ -308,7 +308,7 @@ class DatePicker extends Component {
                           this.setState({
                             invisibleBlocker: false,
                           });
-                        }, 400
+                        }, 100
                       )
                     }}
                     style={[Style.datePicker, customStyles.datePicker]}
